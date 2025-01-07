@@ -1,0 +1,8 @@
+# Zig cache
+.zig-cache
+# Server binaries
+zig-out
+# Frontend builds
+dist
+# Js libraries
+node_modules

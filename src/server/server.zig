@@ -1,4 +1,5 @@
 const std = @import("std");
+const templating = @import("templating.zig");
 const http = std.http;
 const net = std.net;
 const log = std.log.scoped(.server);
@@ -48,7 +49,27 @@ const Server = struct {
         const content = try file.readToEndAlloc(self._allocator, file_size);
         defer self._allocator.free(content);
 
-        try request.respond(content, .{ .extra_headers = &[_]http.Header{.{ .name = "Content-Type", .value = try self.getContentType(file_path) }} });
+        const content_type = try self.getContentType(file_path);
+
+        const headers = [_]http.Header{.{
+            .name = "Content-Type",
+            .value = content_type,
+        }};
+
+        if (std.mem.eql(u8, content_type, "text/html")) {
+            const processed = try templating.parse(content, self._allocator);
+
+            try request.respond(processed, .{
+                .extra_headers = &headers,
+            });
+
+            self._allocator.free(processed);
+        } else {
+            try request.respond(content, .{
+                .extra_headers = &headers,
+            });
+        }
+
         return true;
     }
 

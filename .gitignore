@@ -6,3 +6,5 @@ zig-out
 dist
 # Js libraries
 node_modules
+# Generated files
+*.gen.*

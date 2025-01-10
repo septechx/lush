@@ -3,13 +3,20 @@ const log = std.log.scoped(.templater);
 const lua = @import("lua.zig");
 
 pub fn parse(page: []const u8, path: []const u8, allocator: std.mem.Allocator) ![]const u8 {
-    const lua_path = path;
-    var buf: [256]u8 = undefined;
-    std.mem.copyForwards(u8, buf[0..lua_path.len], lua_path);
-    buf[lua_path.len] = 0;
-    const zero_terminated_path: [:0]const u8 = @ptrCast(&buf);
+    if (!std.mem.endsWith(u8, path, "index.html")) {
+        return error.InvalidPath;
+    }
 
-    const variables = try lua.getVariables(zero_terminated_path, allocator);
+    const base_length = path.len - "index.html".len;
+    const new_length = base_length + "server.lua".len;
+
+    var lua_path = try allocator.allocSentinel(u8, new_length, 0);
+    defer allocator.free(lua_path);
+
+    std.mem.copyForwards(u8, lua_path[0..base_length], path[0..base_length]);
+    std.mem.copyForwards(u8, lua_path[base_length..], "server.lua");
+
+    const variables = try lua.getVariables(lua_path, allocator);
     defer variables.map.deinit();
 
     var result = try allocator.alloc(u8, 0);

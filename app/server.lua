@@ -1,1 +1,3 @@
-Placeholder = "ReplacedByScript"
+Template = {
+	placeholder = "ReplacedByScript",
+}

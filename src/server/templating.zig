@@ -1,19 +1,16 @@
 const std = @import("std");
 const log = std.log.scoped(.templater);
+const lua = @import("lua.zig");
 
-const Variables = struct {
-    _allocator: std.mem.Allocator,
-    map: std.StringHashMap([]const u8),
+pub fn parse(page: []const u8, path: []const u8, allocator: std.mem.Allocator) ![]const u8 {
+    const lua_path = path;
+    var buf: [256]u8 = undefined;
+    std.mem.copyForwards(u8, buf[0..lua_path.len], lua_path);
+    buf[lua_path.len] = 0;
+    const zero_terminated_path: [:0]const u8 = @ptrCast(&buf);
 
-    pub fn init(allocator: std.mem.Allocator) Variables {
-        return .{ ._allocator = allocator, .map = std.StringHashMap([]const u8).init(allocator) };
-    }
-};
-
-pub fn parse(page: []const u8, allocator: std.mem.Allocator) ![]const u8 {
-    var variables = Variables.init(allocator);
+    const variables = try lua.getVariables(zero_terminated_path, allocator);
     defer variables.map.deinit();
-    try variables.map.put("placeholder", "InsertedValue");
 
     var result = try allocator.alloc(u8, 0);
 

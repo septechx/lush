@@ -57,7 +57,7 @@ const Server = struct {
         }};
 
         if (std.mem.eql(u8, content_type, "text/html")) {
-            const processed = try templating.parse(content, self._allocator);
+            const processed = try templating.parse(content, file_path, self._allocator);
 
             try request.respond(processed, .{
                 .extra_headers = &headers,

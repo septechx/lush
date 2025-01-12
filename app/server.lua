@@ -1,4 +1,4 @@
 Template = {
 	placeholder = "ReplacedByScript",
-	fetched = require("fetch").fetch("https://whatthecommit.com/index.txt"),
+	fetched = fetch("https://whatthecommit.com/index.txt"),
 }

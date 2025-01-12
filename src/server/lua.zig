@@ -1,6 +1,12 @@
 const std = @import("std");
 const log = std.log.scoped(.lua);
 const ziglua = @import("ziglua");
+const lua_lib = @import("lua_lib.zig");
+
+fn pushFn(lua: *ziglua.Lua, comptime function: anytype, name: []const u8) void {
+    lua.pushFunction(ziglua.wrap(function));
+    lua.setGlobal(name);
+}
 
 const Variables = struct {
     _allocator: std.mem.Allocator,
@@ -18,6 +24,7 @@ pub fn getVariables(path: [:0]const u8, allocator: std.mem.Allocator) !Variables
     defer lua.deinit();
 
     lua.openLibs();
+    pushFn(lua, lua_lib.fetcher, "fetch");
 
     lua.doFile(path) catch {
         log.err("{s}\n", .{lua.toString(-1)});

@@ -24,7 +24,9 @@ pub fn getVariables(path: [:0]const u8, allocator: std.mem.Allocator) !Variables
     defer lua.deinit();
 
     lua.openLibs();
-    pushFn(lua, lua_lib.fetcher, "fetch");
+    for (lua_lib.functions) |function| {
+        pushFn(lua, function.function, function.name);
+    }
 
     lua.doFile(path) catch {
         log.err("{s}\n", .{lua.toString(-1)});

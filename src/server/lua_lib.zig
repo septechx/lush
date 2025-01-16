@@ -4,7 +4,7 @@ const ziglua = @import("ziglua");
 pub const functions = [_]Function{.{ .function = fetcher, .name = "fetch" }};
 
 const Function = struct {
-    function: fn (*ziglua.Lua) void,
+    function: fn (*ziglua.Lua) i32,
     name: []const u8,
 };
 

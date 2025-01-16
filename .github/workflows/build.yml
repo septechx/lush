@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1.2.1
+        with:
+          version: master
+
+      - name: Build
+        run: zig build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: Server executable
+          path: zig-out/bin/zig-web-framework

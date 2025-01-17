@@ -93,7 +93,7 @@ const Server = struct {
     pub fn runServer(self: *Server, tcp_server: *net.Server) !void {
         while (true) {
             var connection = tcp_server.accept() catch |err| {
-                log.err("Connection to client interrupted: {}\n", .{err});
+                log.err("Connection to client interrupted: {}", .{err});
                 continue;
             };
             defer connection.stream.close();
@@ -102,7 +102,7 @@ const Server = struct {
             var http_server = http.Server.init(connection, &read_buffer);
 
             var request = http_server.receiveHead() catch |err| {
-                log.err("Could not read head: {}\n", .{err});
+                log.err("Could not read head: {}", .{err});
                 continue;
             };
 
@@ -120,7 +120,7 @@ pub fn createServer(allocator: std.mem.Allocator) !void {
     const address = net.Address.parseIp4(server_addr, server_port) catch unreachable;
     var tcp_server = try address.listen(.{});
 
-    log.info("Server listening on http://{s}:{d}\n", .{ server_addr, server_port });
+    log.info("Server listening on http://{s}:{d}", .{ server_addr, server_port });
 
     try server.runServer(&tcp_server);
 }

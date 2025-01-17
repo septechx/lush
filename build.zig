@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
     const ziglua = b.dependency("ziglua", .{
         .target = target,
         .optimize = optimize,
-        .lang = .luau,
+        .lang = .lua54,
     });
     exe.root_module.addImport("ziglua", ziglua.module("ziglua"));
 
@@ -57,17 +57,28 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 
+    const copy_server_exe = b.addExecutable(.{
+        .name = "copy-server",
+        .root_source_file = b.path("src/build/lua_server.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(copy_server_exe);
+    const copy_server_cmd = b.addRunArtifact(copy_server_exe);
+    copy_server_cmd.step.dependOn(b.getInstallStep());
+
     const clean_cmd = b.addSystemCommand(&[_][]const u8{ "rm", "-rf", "dist" });
     const clean_step = b.step("clean", "Delete dist directory");
     clean_step.dependOn(&clean_cmd.step);
 
     const css_cmd = b.addSystemCommand(&[_][]const u8{ "bunx", "tailwindcss", "-i", "./app/styles.css", "-o", "./app/styles.gen.css" });
-    css_cmd.step.dependOn(&clean_cmd.step);
     const css_step = b.step("css", "Generate tailwind classnames");
     css_step.dependOn(&css_cmd.step);
 
     const frontend_cmd = b.addSystemCommand(&[_][]const u8{ "bun", "build", "--experimental-html", "--experimental-css", "app/index.html", "--outdir=dist", "--sourcemap=linked", "--splitting" });
     frontend_cmd.step.dependOn(&css_cmd.step);
+    frontend_cmd.step.dependOn(&clean_cmd.step);
+    frontend_cmd.step.dependOn(&copy_server_cmd.step);
     const frontend_step = b.step("frontend", "Build the frontend");
     frontend_step.dependOn(&frontend_cmd.step);
 }

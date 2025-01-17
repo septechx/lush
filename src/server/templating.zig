@@ -8,16 +8,17 @@ pub fn parse(page: []const u8, path: []const u8, allocator: std.mem.Allocator) !
     }
 
     const base_length = path.len - "index.html".len;
-    const new_length = base_length + "server.lua".len;
+    const new_length = base_length - 5 + "server/server.lua".len;
 
     var lua_path = try allocator.allocSentinel(u8, new_length, 0);
     defer allocator.free(lua_path);
 
-    std.mem.copyForwards(u8, lua_path[0..base_length], path[0..base_length]);
-    std.mem.copyForwards(u8, lua_path[base_length..], "server.lua");
+    std.mem.copyForwards(u8, lua_path[0..6], "server");
+    std.mem.copyForwards(u8, lua_path[6 .. 6 + base_length - 4], path[4..base_length]);
+    std.mem.copyForwards(u8, lua_path[6 + base_length - 4 ..], "server.lua");
 
-    const variables = try lua.getVariables(lua_path, allocator);
-    defer variables.map.deinit();
+    var variables = try lua.getVariables(lua_path, allocator);
+    defer variables.deinit();
 
     var result = try allocator.alloc(u8, 0);
 
@@ -27,7 +28,7 @@ pub fn parse(page: []const u8, path: []const u8, allocator: std.mem.Allocator) !
             const start = std.mem.indexOf(u8, line, "{") orelse continue;
             const end = std.mem.indexOf(u8, line, "}") orelse continue;
             const placeholder = line[start + 1 .. end];
-            const value = variables.map.get(placeholder);
+            const value = variables.get(placeholder);
 
             if (value == null) {
                 log.err("Variable to replace not found, requested: {s}", .{placeholder});

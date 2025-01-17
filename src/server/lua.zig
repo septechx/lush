@@ -3,47 +3,49 @@ const log = std.log.scoped(.lua);
 const ziglua = @import("ziglua");
 const lua_lib = @import("lua_lib.zig");
 
-fn pushFn(lua: *ziglua.Lua, comptime function: anytype, name: []const u8) void {
+fn pushFn(lua: *ziglua.Lua, comptime function: fn (*ziglua.Lua) i32, name: [:0]const u8) void {
     lua.pushFunction(ziglua.wrap(function));
     lua.setGlobal(name);
 }
 
-const Variables = struct {
-    _allocator: std.mem.Allocator,
-    map: std.StringHashMap([]const u8),
+pub fn getVariables(path: [:0]const u8, allocator: std.mem.Allocator) !std.StringHashMap([]const u8) {
+    var variables = std.StringHashMap([]const u8).init(allocator);
 
-    pub fn init(allocator: std.mem.Allocator) Variables {
-        return .{ ._allocator = allocator, .map = std.StringHashMap([]const u8).init(allocator) };
-    }
-};
-
-pub fn getVariables(path: [:0]const u8, allocator: std.mem.Allocator) !Variables {
-    const variables = Variables.init(allocator);
-
-    var lua = try ziglua.Lua.init(allocator);
+    var lua = try ziglua.Lua.init(&allocator);
     defer lua.deinit();
 
     lua.openLibs();
-    for (lua_lib.functions) |function| {
+    inline for (lua_lib.functions) |function| {
         pushFn(lua, function.function, function.name);
     }
 
     lua.doFile(path) catch {
-        log.err("{s}\n", .{lua.toString(-1)});
+        log.err("{s}", .{try lua.toString(-1)});
     };
 
-    lua.getGlobal("Template");
+    _ = try lua.getGlobal("Template");
     if (!lua.isTable(-1)) {
-        log.err("Error: Template is not a table\n", .{});
+        log.err("Error: Template is not a table", .{});
         return error.TemplateError;
     }
 
     lua.pushNil();
     while (lua.next(-2)) : (lua.pop(1)) {
-        const key = lua.toString(-2);
-        const value = lua.toString(-1);
-        variables.map.put(key, value);
-        log.info("Key: {}, Value: {}\n", .{ key, value });
+        const luaKey = try lua.toString(-2);
+        const luaValue = try lua.toString(-1);
+
+        const keyLen = luaKey.len;
+        const valueLen = luaValue.len;
+
+        const key = try allocator.alloc(u8, keyLen);
+        const value = try allocator.alloc(u8, valueLen);
+
+        std.mem.copyForwards(u8, key, luaKey);
+        std.mem.copyForwards(u8, value, luaValue);
+
+        try variables.put(@ptrCast(key), @ptrCast(value));
+
+        log.info("Key: {s}, Value: {s}", .{ key, value });
     }
 
     return variables;

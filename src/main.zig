@@ -8,7 +8,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     server.createServer(allocator) catch |err| {
-        serverLog.err("server error: {}\n", .{err});
+        serverLog.err("server error: {}", .{err});
         if (@errorReturnTrace()) |trace| {
             std.debug.dumpStackTrace(trace.*);
         }

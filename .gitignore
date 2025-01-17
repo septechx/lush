@@ -4,6 +4,7 @@
 zig-out
 # Frontend builds
 dist
+server
 # Js libraries
 node_modules
 # Generated files

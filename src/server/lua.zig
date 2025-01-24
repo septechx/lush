@@ -11,7 +11,7 @@ fn pushFn(lua: *ziglua.Lua, comptime function: fn (*ziglua.Lua) i32, name: [:0]c
 pub fn getVariables(path: [:0]const u8, allocator: std.mem.Allocator) !std.StringHashMap([]const u8) {
     var variables = std.StringHashMap([]const u8).init(allocator);
 
-    var lua = try ziglua.Lua.init(&allocator);
+    var lua = try ziglua.Lua.init(allocator);
     defer lua.deinit();
 
     lua.openLibs();

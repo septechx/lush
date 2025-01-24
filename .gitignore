@@ -9,3 +9,5 @@ server
 node_modules
 # Generated files
 *.gen.*
+# Exclusions
+!src/server

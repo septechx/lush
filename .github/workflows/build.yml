@@ -1,4 +1,4 @@
-name: Build and test server
+name: Build monorepo
 
 on:
   push:
@@ -20,8 +20,5 @@ jobs:
         with:
           version: master
 
-      - name: "Go to server directory"
-        run: cd server
-
       - name: Build
-        run: zig build test
+        run: bazel build :all

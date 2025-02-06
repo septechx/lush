@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Bazel
-        uses: abhinavsingh/setup-bazel@v3
+        uses: bazelbuild/setup-bazelisk@v2
 
       - name: Set up Zig
         uses: mlugg/setup-zig@v1.2.1
@@ -24,4 +24,4 @@ jobs:
           version: master
 
       - name: Build
-        run: bazel build :all
+        run: bazel build //...

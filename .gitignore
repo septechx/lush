@@ -6,3 +6,4 @@ bazel-*
 # Frontend
 node_modules/
 dist/
+*.gen.*

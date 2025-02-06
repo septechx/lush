@@ -1,4 +1,4 @@
-name: Build
+name: Build and test server
 
 on:
   push:
@@ -20,11 +20,8 @@ jobs:
         with:
           version: master
 
-      - name: Build
-        run: zig build
+      - name: "Go to server directory"
+        run: cd server
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4.6.0
-        with:
-          name: Server executable
-          path: zig-out/bin/zig-web-framework
+      - name: Build
+        run: zig build test

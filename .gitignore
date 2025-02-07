@@ -7,3 +7,4 @@ bazel-*
 node_modules/
 dist/
 *.gen.*
+.lush/

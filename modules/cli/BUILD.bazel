@@ -1,6 +1,6 @@
 genrule(
     name = "build",
-    srcs = glob(["src/**/*.zig", "build.zig.zon", "build.zig"]),
+    srcs = glob(["src/**/*.zig", "src/**/*.ts", "build.zig.zon", "build.zig"]),
     outs = ["lush"],
     cmd = """
         WORKSPACE_ROOT=$$(pwd) && \

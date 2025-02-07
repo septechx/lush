@@ -80,13 +80,19 @@ fn freeConfig() void {
     }
 }
 
-fn run_dev() !void {}
-
 fn run_server() !void {
     std.log.debug("server is listening on localhost:{d}", .{config.port});
 }
 
+fn run_dev() !void {
+    try startBuild();
+}
+
 fn run_build() !void {
+    try startBuild();
+}
+
+fn startBuild() !void {
     try createFrontendBuildFiles();
 
     const result = std.process.Child.run(.{
@@ -116,8 +122,8 @@ const files = [_]File{
         .content = @embedFile("./frontend/build-frontend.ts"),
     },
     .{
-        .path = "tailwind-plugin.ts",
-        .content = @embedFile("frontend/tailwind-plugin.ts"),
+        .path = "postcss-plugin.ts",
+        .content = @embedFile("frontend/postcss-plugin.ts"),
     },
 };
 

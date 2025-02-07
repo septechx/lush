@@ -1,6 +1,9 @@
 {
-  "dependencies": {},
+  // None of these dependencies have to be installed, they are only here to get types
   "devDependencies": {
-    "@types/bun": "^1.2.2"
+    "@tailwindcss/postcss": "^4.0.4",
+    "@types/bun": "^1.2.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1"
   }
 }

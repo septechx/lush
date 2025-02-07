@@ -82,23 +82,27 @@ fn freeConfig() void {
 
 fn run_dev() !void {}
 
+fn run_server() !void {
+    std.log.debug("server is listening on localhost:{d}", .{config.port});
+}
+
 fn run_build() !void {
     try createFrontendBuildFiles();
 
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "bun", "run", "./.lush/build-frontend.ts" },
+        .argv = &.{ "bun", "run", "./.lush/build-frontend.ts" },
         .max_output_bytes = 1024 * 1024,
     }) catch |err| {
         std.log.err("Failed to execute bun: {s}\n", .{@errorName(err)});
         return;
     };
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
 
     std.debug.print("{s}\n", .{result.stdout});
-}
-
-fn run_server() !void {
-    std.log.debug("server is listening on localhost:{d}", .{config.port});
 }
 
 const File = struct {
@@ -122,13 +126,10 @@ fn createFrontendBuildFiles() !void {
     try std.fs.cwd().makeDir(".lush");
 
     for (files) |file| {
-        var newFile = try std.fs.cwd().createFile(
-            try std.fs.path.join(
-                allocator,
-                &[_][]const u8{ ".lush/", file.path },
-            ),
-            .{ .read = true },
-        );
+        const path = try std.fs.path.join(allocator, &.{ ".lush", file.path });
+        defer allocator.free(path);
+
+        var newFile = try std.fs.cwd().createFile(path, .{ .read = true });
         defer newFile.close();
         try newFile.writeAll(file.content);
     }

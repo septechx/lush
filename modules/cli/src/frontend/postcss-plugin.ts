@@ -9,14 +9,8 @@ const PostcssPlugin: (plugins: postcss.AcceptedPlugin[]) => BunPlugin = (
     build.onLoad({ filter: /styles.css/ }, async (args) => {
       const input = await Bun.file(args.path).text();
 
-      const destSplit = args.path.split("/");
-      destSplit.pop();
-      destSplit.push("styles.gen.css");
-      const dest = destSplit.join("/");
-
       const processed = await postcss(plugins).process(input, {
         from: args.path,
-        to: dest,
       });
 
       return {

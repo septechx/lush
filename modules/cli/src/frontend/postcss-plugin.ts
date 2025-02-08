@@ -19,7 +19,10 @@ const PostcssPlugin: (plugins: postcss.AcceptedPlugin[]) => BunPlugin = (
         to: dest,
       });
 
-      await Bun.write(Bun.file(dest), processed.css);
+      return {
+        loader: "css",
+        contents: processed.css,
+      };
     });
   },
 });

@@ -1,3 +1,3 @@
 # Lush
-Lua based web framework written in zig. <br>
+Javascript framework with lua templating. <br>
 WIP!

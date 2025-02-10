@@ -19,11 +19,10 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Go to package
-        run: cd ./modules/plugin-postcss
-
       - name: Install dependencies
+        working-directory: modules/plugin-postcss
         run: bun install
 
       - name: Publish package
+        working-directory: modules/plugin-postcss
         run: bun x jsr publish

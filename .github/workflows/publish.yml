@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: modules/plugin-postcss
-        run: bun install @types/bun
+        run: bun install
 
       - name: Publish package
         working-directory: modules/plugin-postcss

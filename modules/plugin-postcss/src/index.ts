@@ -1,4 +1,4 @@
-import { type BunPlugin } from "bun";
+import type { BunPlugin } from "bun";
 import fs from "fs/promises";
 import postcss from "postcss";
 

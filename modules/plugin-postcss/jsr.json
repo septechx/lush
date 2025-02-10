@@ -2,5 +2,8 @@
   "name": "@lush/plugin-postcss",
   "version": "0.1.0",
   "license": "LGPL-3.0",
-  "exports": "./src/index.ts"
+  "exports": "./src/index.ts",
+  "imports": {
+    "postcss": "^8.5.1"
+  }
 }

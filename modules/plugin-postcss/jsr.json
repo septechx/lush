@@ -4,6 +4,6 @@
   "license": "LGPL-3.0",
   "exports": "./src/index.ts",
   "imports": {
-    "npm:postcss": "^8.5.1"
+    "postcss": "npm:postcss@latest"
   }
 }

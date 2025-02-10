@@ -1,0 +1,28 @@
+{
+  "name": "@lush/plugin-postcss",
+  "description": "Bun plugin for the lush framework to use postcss",
+  "version": "0.0.1",
+  "license": "LGPL-3.0",
+  "engines": {
+    "bun": "*"
+  },
+  "keywords": [
+    "postcss-runner"
+  ],
+  "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/septechx/lush.git",
+    "directory": "modules/plugin-postcss"
+  },
+  "author": {
+    "name": "septech",
+    "email": "septechx@proton.me"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.2"
+  },
+  "peerDependencies": {
+    "postcss": "^8.5.1"
+  }
+}

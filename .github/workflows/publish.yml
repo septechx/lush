@@ -15,8 +15,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Go to package
-        run: cd modules/plugin-postcss
-
       - name: Publish package
-        run: npx jsr publish
+        run: cd ./modules/plugin-postcss && npx jsr publish

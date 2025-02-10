@@ -15,5 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Go to package
+        run: cd ./modules/plugin-postcss
+
+      - name: Install dependencies
+        run: bun install
+
       - name: Publish package
-        run: cd ./modules/plugin-postcss && npx jsr publish
+        run: bun x jsr publish

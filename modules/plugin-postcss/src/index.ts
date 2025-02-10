@@ -1,6 +1,6 @@
 import type { BunPlugin } from "bun";
 import fs from "fs/promises";
-import postcss from "npm:postcss";
+import postcss from "postcss";
 
 type Opts = {
   from?: string;

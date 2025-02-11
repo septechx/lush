@@ -1,7 +1,7 @@
 {
   "name": "@lush/plugin-postcss",
   "description": "Bun plugin for the lush framework to use postcss",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "license": "LGPL-3.0",
   "engines": {
     "bun": "*"

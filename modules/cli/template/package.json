@@ -1,8 +1,9 @@
 {
+  "name": "{name}",
+  "version": "0.1.0",
   "devDependencies": {
     "@lush/plugin-postcss": "npm:@jsr/lush__plugin-postcss",
-    "@tailwindcss/postcss": "^4.0.4",
     "@types/bun": "^1.2.2",
-    "autoprefixer": "^10.4.20"
+"autoprefixer": "^10.4.20"
   }
 }

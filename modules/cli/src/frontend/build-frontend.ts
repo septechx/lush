@@ -1,19 +1,12 @@
-import autoprefixer from "autoprefixer";
-// @ts-ignore
-import tailwind from "@tailwindcss/postcss";
-import { postcss } from "./postcss-plugin";
+import type { BuildConfig } from "bun";
 
 const startTime = performance.now();
 console.log("Building client");
 
-await Bun.build({
-  entrypoints: ["./app/index.html"],
-  outdir: "./dist",
-  splitting: true,
-  env: "PUBLIC_*",
-  sourcemap: "linked",
-  plugins: [postcss([autoprefixer, tailwind])],
-}).catch((e) => {
+// @ts-ignore
+const config: BuildConfig = await import("bundler.config.ts");
+
+await Bun.build(config).catch((e) => {
   console.error("Build failed");
   throw e;
 });

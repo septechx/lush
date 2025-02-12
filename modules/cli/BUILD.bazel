@@ -10,6 +10,7 @@ genrule(
         zig build install && \
         chmod +x zig-out/bin/lush && \
         cp zig-out/bin/lush $$WORKSPACE_ROOT/$@
-    """
+    """,
+    executable = True,
 )
 

@@ -12,4 +12,3 @@ export default {
   sourcemap: "linked",
   plugins: [postcss([autoprefixer, tailwind])],
 } as BuildConfig;
-

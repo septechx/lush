@@ -1,28 +1,44 @@
-name: Publish
-on:
-  push:
-    branches:
-      - master
-
 jobs:
-  publish:
+  publish-plugin-postcss:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       id-token: write
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
       - name: Install dependencies
         working-directory: modules/plugin-postcss
         run: bun install
-
       - name: Publish package
         working-directory: modules/plugin-postcss
+        run: bun x jsr publish
+
+  publish-cli:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Set up Bazel
+        uses: bazelbuild/setup-bazelisk@v2
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1.2.1
+        with:
+          version: master
+      - name: Build
+        run: bazel build //...
+      - name: Merge directories 1
+        working-directory: modules/cli
+        run: cp -r package ~/ && cp -r scripts ~/package/
+      - name: Merge directories 2
+        run: cp bazel-bin/modules/cli/lush ~/package/
+      - name: Publish package
+        working-directory: ~/package
         run: bun x jsr publish

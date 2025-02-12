@@ -7,6 +7,7 @@
     "build": "lush build"
   },
   "devDependencies": {
+    "@lush/lush": "npm:@jsr/lush__lush",
     "@lush/plugin-postcss": "npm:@jsr/lush__plugin-postcss",
     "@tailwindcss/postcss": "^4.0.6",
     "@types/bun": "^1.2.2",

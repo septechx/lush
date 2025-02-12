@@ -5,7 +5,7 @@ import tailwind from "@tailwindcss/postcss";
 import { postcss } from "@lush/plugin-postcss";
 
 export default {
-  entrypoints: ["./app/index.html"],
+  entrypoints: ["./src/index.html"],
   outdir: "./dist",
   splitting: true,
   env: "PUBLIC_*",

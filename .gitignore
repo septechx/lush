@@ -1,9 +1,7 @@
-# Zig
 .zig-cache/
 zig-out/
-# Bazel
 bazel-*
-# Frontend
 node_modules/
 dist/
 .lush/
+test/

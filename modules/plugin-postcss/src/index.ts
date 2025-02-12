@@ -22,12 +22,12 @@ const PostcssPlugin: (
 
       const processed = (await postcss(plugins)
         .process(input, {
-          from: opts.from ?? args.path,
-          to: opts.to ?? args.path,
-          syntax: opts.syntax,
-          parser: opts.parser,
-          stringifier: opts.stringifier,
-          map: opts.map,
+          from: opts?.from ?? args.path,
+          to: opts?.to ?? args.path,
+          syntax: opts?.syntax,
+          parser: opts?.parser,
+          stringifier: opts?.stringifier,
+          map: opts?.map,
         })
         .catch((error) => {
           if (error.name === "CssSyntaxError") {
@@ -42,7 +42,7 @@ const PostcssPlugin: (
       });
 
       if (processed.map) {
-        await fs.writeFile(opts.to + ".map", processed!.map.toString());
+        await fs.writeFile(opts?.to + ".map", processed!.map.toString());
       }
 
       return {

@@ -22,12 +22,12 @@ const PostcssPlugin: (
 
       const processed = (await postcss(plugins)
         .process(input, {
-          from: opts?.from ?? args.path,
-          to: opts?.to ?? args.path,
-          syntax: opts?.syntax,
-          parser: opts?.parser,
-          stringifier: opts?.stringifier,
-          map: opts?.map,
+          from: opts ? opts.from ?? args.path : args.path,
+          to: opts ? opts.to ?? args.path : args.path,
+          syntax: opts ? opts.syntax : undefined,
+          parser: opts ? opts.parser : undefined,
+          stringifier: opts ? opts.stringifier : undefined,
+          map: opts ? opts.map : undefined,
         })
         .catch((error) => {
           if (error.name === "CssSyntaxError") {

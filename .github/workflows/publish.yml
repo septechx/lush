@@ -46,4 +46,4 @@ jobs:
         run: cp bazel-bin/modules/cli/lush /home/runner/work/lush/lush/build/package/
       - name: Publish package
         working-directory: /home/runner/work/lush/lush/build/package
-        run: bun x jsr publish
+        run: bun x jsr publish --allow-dirty

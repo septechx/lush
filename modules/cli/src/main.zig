@@ -1,20 +1,45 @@
 const std = @import("std");
 const cli = @import("zig-cli");
+const template = @import("template.zig");
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
 
 var config = struct {
     port: u16 = 3000,
+    name: []const u8 = "my-lush-app",
 }{};
 
-fn build() cli.Command {
+fn init(r: *cli.AppRunner) !cli.Command {
+    return cli.Command{
+        .name = "init",
+        .description = cli.Description{
+            .one_line = "Create a new project",
+        },
+        .target = cli.CommandTarget{
+            .action = cli.CommandAction{
+                .exec = run_init,
+                .positional_args = .{
+                    .optional = try r.allocPositionalArgs(&.{
+                        .{
+                            .name = "name",
+                            .help = "name for the project to create",
+                            .value_ref = r.mkRef(&config.name),
+                        },
+                    }),
+                },
+            },
+        },
+    };
+}
+
+fn build(r: *cli.AppRunner) !cli.Command {
+    _ = r;
     return cli.Command{
         .name = "build",
         .description = cli.Description{
             .one_line = "Build the app",
         },
-
         .target = cli.CommandTarget{
             .action = cli.CommandAction{
                 .exec = run_build,
@@ -46,9 +71,8 @@ fn dev(r: *cli.AppRunner) !cli.Command {
     };
 }
 
-fn parseArgs() cli.AppRunner.Error!cli.ExecFn {
+fn parseArgs() !cli.ExecFn {
     var r = try cli.AppRunner.init(allocator);
-
     const app = cli.App{
         .option_envvar_prefix = "LUSH_",
         .command = cli.Command{
@@ -59,24 +83,28 @@ fn parseArgs() cli.AppRunner.Error!cli.ExecFn {
             .target = cli.CommandTarget{
                 .subcommands = try r.allocCommands(&.{
                     try dev(&r),
-                    build(),
+                    try init(&r),
+                    try build(&r),
                 }),
             },
         },
         .version = "0.1.0",
     };
-
-    return r.getAction(&app);
+    return try r.getAction(&app);
 }
 
 pub fn main() !void {
-    try (try parseArgs())();
+    const action = try parseArgs();
+    try action();
     freeConfig();
 }
 
 fn freeConfig() void {
+    if (!std.mem.eql(u8, config.name, "my-lush-app")) {
+        allocator.free(config.name);
+    }
     if (gpa.deinit() == .leak) {
-        @panic("config leaked");
+        @panic("Leaked");
     }
 }
 
@@ -86,57 +114,40 @@ fn run_server() !void {
 
 fn run_dev() !void {
     try startBuild();
+    try run_server();
 }
 
 fn run_build() !void {
     try startBuild();
 }
 
-fn startBuild() !void {
-    try createFrontendBuildFiles();
+fn run_init() !void {
+    try startInit();
+}
 
-    const result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "bun", "run", "./.lush/build-frontend.ts" },
-        .max_output_bytes = 1024 * 1024,
-    }) catch |err| {
-        std.log.err("Failed to execute bun: {s}\n", .{@errorName(err)});
-        return;
+fn startInit() !void {
+    var templateMap = try allocator.alloc(template.StringMap, template.templateMap.len);
+    _ = &templateMap;
+    defer allocator.free(templateMap);
+    try template.makeTemplate(allocator, config.name, templateMap);
+    try template.createProject(config.name, templateMap);
+}
+
+fn startBuild() !void {
+    std.fs.cwd().deleteTree("dist") catch |err| {
+        if (err != error.FileNotFound) return err;
     };
+
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "bun", "run", "build" },
+        .max_output_bytes = 1024 * 1024,
+    });
     defer {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
 
-    std.debug.print("{s}\n", .{result.stdout});
-}
-
-const File = struct {
-    path: []const u8,
-    content: []const u8,
-};
-
-const files = [_]File{
-    .{
-        .path = "build-frontend.ts",
-        .content = @embedFile("./frontend/build-frontend.ts"),
-    },
-    .{
-        .path = "postcss-plugin.ts",
-        .content = @embedFile("frontend/postcss-plugin.ts"),
-    },
-};
-
-fn createFrontendBuildFiles() !void {
-    try std.fs.cwd().deleteTree(".lush");
-    try std.fs.cwd().makeDir(".lush");
-
-    for (files) |file| {
-        const path = try std.fs.path.join(allocator, &.{ ".lush", file.path });
-        defer allocator.free(path);
-
-        var newFile = try std.fs.cwd().createFile(path, .{ .read = true });
-        defer newFile.close();
-        try newFile.writeAll(file.content);
-    }
+    try std.io.getStdOut().writer().writeAll(result.stdout);
+    try std.io.getStdErr().writer().writeAll(result.stderr);
 }

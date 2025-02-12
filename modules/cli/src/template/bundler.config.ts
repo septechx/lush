@@ -1,9 +1,7 @@
 import type { BuildConfig } from "bun";
 
 import autoprefixer from "autoprefixer";
-// @ts-ignore
 import tailwind from "@tailwindcss/postcss";
-// @ts-ignore
 import { postcss } from "@lush/plugin-postcss";
 
 export default {

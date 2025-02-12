@@ -1,27 +1,59 @@
 const std = @import("std");
 
-const StringMap = struct { []const u8, []const u8 };
-
-const templateMap = [_]StringMap{
-    .{ ".gitignore", @embedFile("../template/.gitignore") },
-    .{ ".npmrc", @embedFile("../template/.npmrc") },
-    .{ "bundler.config.ts", @embedFile("../template/bundler.config.ts") },
-    .{ "package.json", @embedFile("../template/package.json") },
+pub const StringMap = struct {
+    path: []const u8,
+    content: []const u8,
 };
 
-pub fn makeTemplate(name: []const u8, destination: *templateMap) !void {
-    var buf: [templateMap.len]StringMap = undefined;
+pub const TemplateMap = []StringMap;
 
-    for (templateMap) |map| {
-        if (std.mem.eql(u8, "package.json")) {
-            const size = map[1].len - 6 + name.len;
-            var templateBuf: [size]u8 = undefined;
-            std.mem.replace(u8, map[1], "{name}", name, &templateBuf);
-            buf.append(.{ map[0], templateBuf });
-        } else {
-            buf.append(map);
+pub const templateMap = [_]StringMap{
+    .{ .path = "src/", .content = "" },
+    .{ .path = ".gitignore", .content = @embedFile("template/.gitignore") },
+    .{ .path = ".npmrc", .content = @embedFile("template/.npmrc") },
+    .{ .path = "bundler.config.ts", .content = @embedFile("template/bundler.config.ts") },
+    .{ .path = "package.json", .content = @embedFile("template/package.json") },
+};
+
+pub fn getSize(map: StringMap, name: []const u8) usize {
+    return map.content.len - 6 + name.len;
+}
+
+pub fn makeTemplate(allocator: std.mem.Allocator, name: []const u8, destination: TemplateMap) !void {
+    std.mem.copyForwards(StringMap, destination, &templateMap);
+
+    for (destination) |*map| {
+        if (std.mem.eql(u8, map.path, "package.json")) {
+            const size = getSize(map.*, name);
+            const templateBuf = try allocator.alloc(u8, size);
+            errdefer allocator.free(templateBuf);
+
+            _ = std.mem.replace(u8, map.content, "{name}", name, templateBuf);
+            map.content = templateBuf;
         }
     }
+}
 
-    try std.mem.copyForwards(StringMap, destination, buf);
+pub fn createProject(basePath: []const u8, template: TemplateMap) !void {
+    var dir = try std.fs.cwd().makeOpenPath(basePath, .{});
+    defer dir.close();
+
+    for (template) |map| {
+        const path = map.path;
+        const content = map.content;
+
+        if (std.mem.endsWith(u8, path, "/")) {
+            try dir.makePath(path);
+            continue;
+        }
+
+        if (std.mem.lastIndexOf(u8, path, "/")) |last_slash| {
+            const dir_path = path[0..last_slash];
+            try dir.makePath(dir_path);
+        }
+
+        const file = try dir.createFile(path, .{});
+        defer file.close();
+        try file.writeAll(content);
+    }
 }

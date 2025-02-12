@@ -140,8 +140,7 @@ fn startBuild() !void {
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        // TODO: Make this run the file
-        .argv = &.{ "bun", "run", "node_modules/@lush/lush/scripts/frontend-build.ts" },
+        .argv = &.{ "bun", "run", "node_modules/@lush/lush/scripts/build-frontend.ts" },
         .max_output_bytes = 1024 * 1024,
     });
     defer {

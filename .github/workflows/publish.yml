@@ -1,3 +1,8 @@
+name: Publish packages
+on:
+  push:
+    branches:
+      - master
 jobs:
   publish-plugin-postcss:
     runs-on: ubuntu-latest

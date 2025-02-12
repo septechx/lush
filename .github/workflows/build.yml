@@ -1,5 +1,4 @@
 name: Build monorepo
-
 on:
   push:
     branches:
@@ -7,21 +6,17 @@ on:
   pull_request:
     branches:
       - master
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
         uses: actions/checkout@v4
-
       - name: Set up Bazel
         uses: bazelbuild/setup-bazelisk@v2
-
       - name: Set up Zig
         uses: mlugg/setup-zig@v1.2.1
         with:
           version: master
-
       - name: Build
         run: bazel build //...

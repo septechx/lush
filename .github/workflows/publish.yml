@@ -40,9 +40,9 @@ jobs:
         run: bazel build //...
       - name: Merge directories 1
         working-directory: modules/cli
-        run: cp -r package $HOME/ && cp -r scripts ~/package/
+        run: mkdir -p /home/runner/work/lush/lush/build && cp -r package /home/runner/work/lush/lush/build/ && cp -r scripts /home/runner/work/lush/lush/build/package/
       - name: Merge directories 2
-        run: cp bazel-bin/modules/cli/lush $HOME/package/
+        run: cp bazel-bin/modules/cli/lush /home/runner/work/lush/lush/build/package/
       - name: Publish package
-        working-directory: $HOME/package
+        working-directory: /home/runner/work/lush/lush/build/package
         run: bun x jsr publish

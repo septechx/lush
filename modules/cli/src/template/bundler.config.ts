@@ -1,14 +1,8 @@
-import type { BuildConfig } from "bun";
-
 import autoprefixer from "autoprefixer";
 import tailwind from "@tailwindcss/postcss";
 import { postcss } from "@lush/plugin-postcss";
+import type { BundlerConfig } from "@lush/lush";
 
 export default {
-  entrypoints: ["./src/index.html"],
-  outdir: "./dist",
-  splitting: true,
-  env: "PUBLIC_*",
-  sourcemap: "linked",
   plugins: [postcss([autoprefixer, tailwind])],
-} as BuildConfig;
+} as BundlerConfig;

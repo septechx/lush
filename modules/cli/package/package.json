@@ -1,12 +1,13 @@
 {
   "name": "@lush/lush",
   "description": "Lush framework cli and tools",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "LGPL-3.0",
   "engines": {
     "bun": "*"
   },
   "bin": "lush",
+  "main": "./scripts/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/septechx/lush.git",

@@ -16,7 +16,7 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         working-directory: modules/plugin-postcss
-        run: bun install
+        run: bunx jsr add @lush/lush && bun install
       - name: Publish package
         working-directory: modules/plugin-postcss
         run: bun x jsr publish

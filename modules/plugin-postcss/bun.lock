@@ -6,11 +6,14 @@
         "@types/bun": "^1.2.2",
       },
       "peerDependencies": {
+        "@lush/lush": "npm:@jsr/lush__lush",
         "postcss": "^8.5.1",
       },
     },
   },
   "packages": {
+    "@lush/lush": ["@jsr/lush__lush@0.2.0", "https://npm.jsr.io/~/11/@jsr/lush__lush/0.2.0.tgz", { "dependencies": { "@types/bun": "latest" } }, "sha512-VL/ZNu51wdlQwI36I9b99wUDZMKgr/3VqNfqUn4dPz2unFLU7/galxEmnBSR5o3RbA8SwubtuSaRhA6BptwTzg=="],
+
     "@types/bun": ["@types/bun@1.2.2", "", { "dependencies": { "bun-types": "1.2.2" } }, "sha512-tr74gdku+AEDN5ergNiBnplr7hpDp3V1h7fqI2GcR/rsUaM39jpSeKH0TFibRvU0KwniRx5POgaYnaXbk0hU+w=="],
 
     "@types/node": ["@types/node@22.13.1", "", { "dependencies": { "undici-types": "~6.20.0" } }, "sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew=="],

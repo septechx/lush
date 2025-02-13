@@ -19,7 +19,7 @@ jobs:
         run: bunx jsr add @lush/lush && bun install
       - name: Publish package
         working-directory: modules/plugin-postcss
-        run: bun x jsr publish
+        run: bunx jsr publish --allow-dirty
 
   publish-cli:
     runs-on: ubuntu-latest

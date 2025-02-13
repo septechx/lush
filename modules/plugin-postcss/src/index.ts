@@ -22,8 +22,8 @@ const PostcssPlugin: (
 
       const processed = (await postcss(plugins)
         .process(input, {
-          from: opts ? opts.from ?? args.path : args.path,
-          to: opts ? opts.to ?? args.path : args.path,
+          from: opts ? (opts.from ?? args.path) : args.path,
+          to: opts ? (opts.to ?? args.path) : args.path,
           syntax: opts ? opts.syntax : undefined,
           parser: opts ? opts.parser : undefined,
           stringifier: opts ? opts.stringifier : undefined,
@@ -53,4 +53,4 @@ const PostcssPlugin: (
   },
 });
 
-export { PostcssPlugin as postcss };
+export { PostcssPlugin as postcss, Opts };

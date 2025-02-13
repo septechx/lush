@@ -6,7 +6,7 @@
   "imports": {
     "postcss": "npm:postcss@8.5.1",
     "bun": "npm:@types/bun@latest",
-    "@lush/lush": "jsr:@lush/lush"
+    "@lush/lush": "jsr:@lush/lush@>=0.2.0"
   },
   "exclude": ["BUILD.bazel"]
 }

@@ -2,5 +2,8 @@
   "name": "@lush/lush",
   "version": "0.2.0",
   "license": "LGPL-3.0",
-  "exports": "./scripts/index.ts"
+  "exports": "./scripts/index.ts",
+  "imports": {
+    "bun": "npm:@types/bun@latest"
+  }
 }

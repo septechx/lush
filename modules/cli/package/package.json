@@ -1,7 +1,7 @@
 {
   "name": "@lush/lush",
   "description": "Lush framework cli and tools",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "license": "LGPL-3.0",
   "engines": {
     "bun": "*"
@@ -16,6 +16,9 @@
   "author": {
     "name": "septech",
     "email": "septechx@proton.me"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1"
   },
   "devDependencies": {
     "@types/bun": "^1.2.2"

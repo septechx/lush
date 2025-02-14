@@ -1,16 +1,28 @@
-import fs from "fs/promises";
+import { Chalk } from "chalk";
+import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
 import type { BundlerConfig } from ".";
 
 build();
 
+const chalk = new Chalk({ level: 3 });
+
+const colors: Record<string, ChalkInstance> = {
+  css: chalk.magenta,
+  js: chalk.cyan,
+  html: chalk.blue,
+  ico: chalk.green,
+  map: chalk.red,
+};
+
 async function build() {
-  const startTime = performance.now();
-  process.stdout.write("Building client\n");
+  const realStartTime = performance.now();
 
   const config = await getConfig();
 
-  await Bun.build(
+  const startTime = performance.now();
+
+  const output = await Bun.build(
     extend<BundlerConfig, BuildConfig, BuildConfig>(config, {
       entrypoints: ["./src/index.html"],
       outdir: "./dist/client",
@@ -24,9 +36,24 @@ async function build() {
   });
 
   const endTime = performance.now();
+
+  for (const out of output.outputs) {
+    process.stdout.write(`${chalk.gray("[built]")} ${genFileOut(out.path)}\n`);
+  }
+
+  const realEndTime = performance.now();
+
   process.stdout.write(
-    `Client built, took ${Math.round(endTime - startTime)}ms\n`,
+    `Built in ${Math.round(endTime - startTime)}ms (${Math.round(realEndTime - realStartTime)}ms). \n`,
   );
+}
+
+function genFileOut(path: string): string {
+  const splitPath = path.split("/");
+  const exts = splitPath[splitPath.length - 1].split(".");
+  const ext = exts[exts.length - 1];
+
+  return colors[ext](`dist/${path.split("/dist/")[1]}`);
 }
 
 async function getConfig(): Promise<BundlerConfig> {
@@ -39,8 +66,7 @@ async function exec(js: string) {
   const url = URL.createObjectURL(blob);
 
   try {
-    const module = await import(url);
-    return module;
+    return await import(url);
   } finally {
     URL.revokeObjectURL(url);
   }

@@ -142,7 +142,7 @@ fn startBuild() !void {
         error.FileNotFound => blk: {
             const file = try std.fs.cwd().createFile("bundler.config.ts", .{});
             _ = try file.write(
-                \\import { BundlerConfig } from "@lush/lush";
+                \\import type { BundlerConfig } from "@lush/lush";
                 \\
                 \\export default {} as BundlerConfig;
             );

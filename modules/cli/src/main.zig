@@ -144,7 +144,7 @@ fn startBuild() !void {
             _ = try file.write(
                 \\import { BundlerConfig } from "@lush/lush";
                 \\
-                \\export default {}
+                \\export default {} as BundlerConfig;
             );
             break :blk file;
         },

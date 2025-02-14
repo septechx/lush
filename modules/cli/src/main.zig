@@ -138,9 +138,28 @@ fn startBuild() !void {
         if (err != error.FileNotFound) return err;
     };
 
+    const bundlerConfig = std.fs.cwd().openFile("bundler.config.ts", .{}) catch |err| switch (err) {
+        error.FileNotFound => blk: {
+            const file = try std.fs.cwd().createFile("bundler.config.ts", .{});
+            _ = try file.write(
+                \\import { BundlerConfig } from "@lush/lush";
+                \\
+                \\export default {}
+            );
+            break :blk file;
+        },
+        else => return err,
+    };
+    defer bundlerConfig.close();
+
+    const configSize = (try bundlerConfig.stat()).size;
+    const buf = try allocator.alloc(u8, configSize);
+    defer allocator.free(buf);
+    _ = try bundlerConfig.reader().readNoEof(buf);
+
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{ "bun", "run", "node_modules/@lush/lush/scripts/build-frontend.ts" },
+        .argv = &.{ "bun", "run", "node_modules/@lush/lush/scripts/build-frontend.ts", buf },
         .max_output_bytes = 1024 * 1024,
     });
     defer {

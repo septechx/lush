@@ -2,34 +2,48 @@ import fs from "fs/promises";
 import type { BuildConfig } from "bun";
 import type { BundlerConfig } from ".";
 
-const startTime = performance.now();
-process.stdout.write("Building client\n");
+build();
 
-const config = await getConfig();
+async function build() {
+  const startTime = performance.now();
+  process.stdout.write("Building client\n");
 
-await Bun.build(
-  extend<BundlerConfig, BuildConfig, BuildConfig>(config, {
-    entrypoints: ["./src/index.html"],
-    outdir: "./dist/client",
-    splitting: true,
-    env: "PUBLIC_*",
-    sourcemap: "linked",
-  }),
-).catch((e) => {
-  process.stderr.write("Build failed\n");
-  throw e;
-});
+  const config = await getConfig();
 
-const endTime = performance.now();
-process.stdout.write(
-  `Client built, took ${Math.round(endTime - startTime)}ms\n`,
-);
+  await Bun.build(
+    extend<BundlerConfig, BuildConfig, BuildConfig>(config, {
+      entrypoints: ["./src/index.html"],
+      outdir: "./dist/client",
+      splitting: true,
+      env: "PUBLIC_*",
+      sourcemap: "linked",
+    }),
+  ).catch((e) => {
+    process.stderr.write("Build failed\n");
+    throw e;
+  });
+
+  const endTime = performance.now();
+  process.stdout.write(
+    `Client built, took ${Math.round(endTime - startTime)}ms\n`,
+  );
+}
 
 async function getConfig(): Promise<BundlerConfig> {
-  if (!(await fs.exists("bundler.config.ts"))) return {};
+  const configBytes = process.argv[3];
+  return (await exec(configBytes)) as BundlerConfig;
+}
 
-  const path = await fs.realpath("bundler.config.ts");
-  return import(path).then((d: { default: BundlerConfig }) => d.default);
+async function exec(js: string) {
+  const blob = new Blob([js], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+
+  try {
+    const module = await import(url);
+    return module;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 function extend<T extends object, U extends object, V = T & U>(

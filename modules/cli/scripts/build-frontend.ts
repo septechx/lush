@@ -34,10 +34,10 @@ async function getConfig(): Promise<BundlerConfig> {
 
 function extend<T extends object, U extends object, V = T & U>(
   obj: T,
-  extend: U,
+  ext: U,
 ): V {
   return {
-    ...extend,
+    ...ext,
     ...obj,
   } as V;
 }

@@ -21,7 +21,7 @@ jobs:
         working-directory: modules/plugin-postcss
         run: bunx jsr publish --allow-dirty
 
-  publish-cli:
+  publish-core:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,10 +40,10 @@ jobs:
       - name: Build
         run: bazel build //...
       - name: Merge directories 1
-        working-directory: modules/cli
+        working-directory: modules/core
         run: mkdir -p /home/runner/work/lush/lush/build && cp -r package /home/runner/work/lush/lush/build/ && cp -r scripts /home/runner/work/lush/lush/build/package/ && cp README.md /home/runner/work/lush/lush/build/package/
       - name: Merge directories 2
-        run: cp bazel-bin/modules/cli/lush /home/runner/work/lush/lush/build/package/
+        run: cp bazel-bin/modules/core/lush /home/runner/work/lush/lush/build/package/
       - name: Publish package
         working-directory: /home/runner/work/lush/lush/build/package
         run: bun x jsr publish --allow-dirty

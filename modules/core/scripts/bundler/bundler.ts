@@ -1,11 +1,7 @@
 import { Chalk } from "chalk";
 import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
-import type { BundlerConfig } from ".";
-
-build();
-
-const dev = process.argv[3] === "1" ? true : false;
+import { BundlerConfig, StdOuts } from "..";
 
 const chalk = new Chalk({ level: 3 });
 
@@ -17,10 +13,10 @@ const colors: Record<string, ChalkInstance> = {
   map: chalk.red,
 };
 
-async function build() {
+export async function build(dev: boolean, config: BundlerConfig) {
   const realStartTime = performance.now();
 
-  const config = JSON.parse(process.argv[2]);
+  const outs = new StdOuts();
 
   const startTime = performance.now();
 
@@ -33,7 +29,7 @@ async function build() {
       sourcemap: "linked",
     }),
   ).catch((e) => {
-    process.stderr.write("Build failed\n");
+    outs.error("Build failed\n");
     throw e;
   });
 
@@ -41,19 +37,19 @@ async function build() {
 
   if (!dev) {
     for (const out of output.outputs) {
-      process.stdout.write(
-        `${chalk.gray("[built]")} ${genFileOut(out.path)}\n`,
-      );
+      outs.print(`${chalk.gray("[built]")} ${genFileOut(out.path)}\n`);
     }
   }
 
   const realEndTime = performance.now();
 
-  process.stdout.write(
+  outs.print(
     chalk.greenBright(
       `Built in ${Math.round(endTime - startTime)}ms (${Math.round(realEndTime - realStartTime)}ms). \n`,
     ),
   );
+
+  return outs;
 }
 
 function genFileOut(path: string): string {

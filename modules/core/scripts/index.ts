@@ -16,7 +16,7 @@ export class StdOuts {
     this.err = out;
   }
 
-  get out() {
+  get out(): string {
     return this.#stdout;
   }
 
@@ -24,7 +24,7 @@ export class StdOuts {
     this.#stdout += out;
   }
 
-  get err() {
+  get err(): string {
     return this.#stderr;
   }
 

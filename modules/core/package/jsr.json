@@ -1,6 +1,6 @@
 {
   "name": "@lush/lush",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "license": "LGPL-3.0",
   "exports": "./scripts/index.ts",
   "imports": {

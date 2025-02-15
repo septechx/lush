@@ -113,12 +113,12 @@ fn run_server() !void {
 }
 
 fn run_dev() !void {
-    try startBuild();
+    try startBuild(true);
     try run_server();
 }
 
 fn run_build() !void {
-    try startBuild();
+    try startBuild(false);
 }
 
 fn run_init() !void {
@@ -133,7 +133,14 @@ fn startInit() !void {
     try template.createProject(config.name, templateMap);
 }
 
-fn startBuild() !void {
+fn startBuild(devMode: bool) !void {
+    const outw = std.io.getStdOut().writer();
+    const errw = std.io.getStdErr().writer();
+
+    if (devMode) {
+        try outw.writeAll("\x1B[2J\x1B[H");
+    }
+
     std.fs.cwd().deleteTree("dist") catch |err| {
         if (err != error.FileNotFound) return err;
     };
@@ -155,11 +162,44 @@ fn startBuild() !void {
     const configSize = (try bundlerConfig.stat()).size;
     const buf = try allocator.alloc(u8, configSize);
     defer allocator.free(buf);
-    _ = try bundlerConfig.reader().readNoEof(buf);
+    try bundlerConfig.reader().readNoEof(buf);
+
+    try mkcache();
+
+    const rawCache = readCache("bundler_config_raw") catch |err| switch (err) {
+        error.FileNotFound => blk: {
+            try writeCache("bundler_config_raw", buf);
+            break :blk try readCache("bundler_config_raw");
+        },
+        else => return err,
+    };
+    defer allocator.free(rawCache);
+
+    var hit = true;
+    if (!std.mem.eql(u8, buf, rawCache)) {
+        try writeCache("bundler_config_raw", buf);
+        hit = false;
+    }
+
+    const cache = if (!hit)
+        try processConfig(buf, configSize)
+    else
+        readCache("bundler_config") catch |err| switch (err) {
+            error.FileNotFound => try processConfig(rawCache, configSize),
+            else => return err,
+        };
+
+    defer allocator.free(cache);
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{ "bun", "run", "node_modules/@lush/lush/scripts/build-frontend.ts", buf },
+        .argv = &.{
+            "bun",
+            "run",
+            "node_modules/@lush/lush/scripts/build-frontend.ts",
+            cache,
+            if (devMode) "1" else "0",
+        },
         .max_output_bytes = 1024 * 1024,
     });
     defer {
@@ -167,6 +207,49 @@ fn startBuild() !void {
         allocator.free(result.stderr);
     }
 
-    try std.io.getStdOut().writer().writeAll(result.stdout);
-    try std.io.getStdErr().writer().writeAll(result.stderr);
+    try outw.writeAll(result.stdout);
+    try errw.writeAll(result.stderr);
+}
+
+fn mkcache() !void {
+    try std.fs.cwd().makePath(".lush/cache");
+}
+
+fn writeCache(name: []const u8, content: []const u8) !void {
+    const path = try std.fmt.allocPrint(allocator, ".lush/cache/{s}", .{name});
+    defer allocator.free(path);
+    const file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    try file.writeAll(content);
+}
+
+fn readCache(name: []const u8) ![]const u8 {
+    const path = try std.fmt.allocPrint(allocator, ".lush/cache/{s}", .{name});
+    defer allocator.free(path);
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+
+    const fileSize = (try file.stat()).size;
+    const buf = try allocator.alloc(u8, fileSize);
+    try file.reader().readNoEof(buf);
+    return buf;
+}
+
+fn processConfig(rawCache: []const u8, configSize: usize) ![]const u8 {
+    const configResult = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{
+            "bun",
+            "run",
+            "node_modules/@lush/lush/scripts/process-config.ts",
+            rawCache,
+        },
+        .max_output_bytes = configSize,
+    });
+    defer {
+        allocator.free(configResult.stdout);
+        allocator.free(configResult.stderr);
+    }
+    try writeCache("bundler_config", configResult.stdout);
+    return try readCache("bundler_config");
 }

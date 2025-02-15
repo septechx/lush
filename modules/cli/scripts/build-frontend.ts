@@ -5,20 +5,22 @@ import type { BundlerConfig } from ".";
 
 build();
 
+const dev = process.argv[3] === "1" ? true : false;
+
 const chalk = new Chalk({ level: 3 });
 
 const colors: Record<string, ChalkInstance> = {
   css: chalk.magenta,
   js: chalk.cyan,
   html: chalk.blue,
-  ico: chalk.green,
+  ico: chalk.yellow,
   map: chalk.red,
 };
 
 async function build() {
   const realStartTime = performance.now();
 
-  const config = await getConfig();
+  const config = JSON.parse(process.argv[2]);
 
   const startTime = performance.now();
 
@@ -37,14 +39,20 @@ async function build() {
 
   const endTime = performance.now();
 
-  for (const out of output.outputs) {
-    process.stdout.write(`${chalk.gray("[built]")} ${genFileOut(out.path)}\n`);
+  if (!dev) {
+    for (const out of output.outputs) {
+      process.stdout.write(
+        `${chalk.gray("[built]")} ${genFileOut(out.path)}\n`,
+      );
+    }
   }
 
   const realEndTime = performance.now();
 
   process.stdout.write(
-    `Built in ${Math.round(endTime - startTime)}ms (${Math.round(realEndTime - realStartTime)}ms). \n`,
+    chalk.greenBright(
+      `Built in ${Math.round(endTime - startTime)}ms (${Math.round(realEndTime - realStartTime)}ms). \n`,
+    ),
   );
 }
 
@@ -54,22 +62,6 @@ function genFileOut(path: string): string {
   const ext = exts[exts.length - 1];
 
   return colors[ext](`dist/${path.split("/dist/")[1]}`);
-}
-
-async function getConfig(): Promise<BundlerConfig> {
-  const configBytes = process.argv[3];
-  return (await exec(configBytes)) as BundlerConfig;
-}
-
-async function exec(js: string) {
-  const blob = new Blob([js], { type: "text/javascript" });
-  const url = URL.createObjectURL(blob);
-
-  try {
-    return await import(url);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
 }
 
 function extend<T extends object, U extends object, V = T & U>(

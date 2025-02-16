@@ -1,13 +1,13 @@
 genrule(
     name = "build",
-    srcs = glob(["src/**/*", "build.zig.zon", "build.zig"]),
+    srcs = glob(["src/**/*", "include/**/*", "build.zig.zon", "build.zig"]),
     outs = ["lush"],
     cmd = """
         WORKSPACE_ROOT=$$(pwd) && \
         cd $$(dirname $(location build.zig)) && \
         export ZIG_GLOBAL_CACHE_DIR=$$(mktemp -d) && \
         export ZIG_LOCAL_CACHE_DIR=$$(mktemp -d) && \
-        zig build install && \
+        zig build && \
         chmod +x zig-out/bin/lush && \
         cp zig-out/bin/lush $$WORKSPACE_ROOT/$@
     """,

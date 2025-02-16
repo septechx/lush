@@ -114,12 +114,12 @@ fn freeConfig() void {
 }
 
 fn run_dev() !void {
-    try build_once.prepareBuild();
+    try build_once.prepareBuild(stdOut);
     try dev_server.init(allocator);
 }
 
 fn run_build() !void {
-    try build_once.prepareBuild();
+    try build_once.prepareBuild(stdOut);
     try build_once.build(allocator, stdOut, stdErr);
 }
 

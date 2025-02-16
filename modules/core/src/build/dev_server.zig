@@ -3,26 +3,26 @@ const Writer = std.fs.File.Writer;
 const Reader = std.fs.File.Reader;
 const io = std.io;
 
+const chalk = @cImport({
+    @cDefine("CHALK_NO_PREFIX", {});
+    @cInclude("chalk.h");
+    @cInclude("chalk-ext.h");
+});
+
 const stdin = io.getStdIn().reader();
 const stdout = io.getStdOut().writer();
 
 const Proto = struct {
-    id: u1,
-
-    const Self = @This();
+    const lu = [_][]const u8{
+        "b",
+    };
 
     pub fn build() []const u8 {
-        const instr = Self{ .id = 0 };
-
-        return instr.send();
+        return send(0);
     }
 
-    fn send(comptime self: Self) []const u8 {
-        const lu = [_][]const u8{
-            "b",
-        };
-
-        return lu[self.id] ++ "\n";
+    fn send(comptime ins: u1) []const u8 {
+        return lu[ins] ++ "\n";
     }
 };
 
@@ -37,7 +37,9 @@ pub fn init(allocator: std.mem.Allocator) !void {
     const stdin_writer = child.stdin.?.writer();
     const stdout_reader = child.stdout.?.reader();
 
-    try build(stdin_writer, stdout_reader);
+    try build(true, stdin_writer, stdout_reader);
+
+    try startupMessage();
 
     while (true) {
         var buf: [2]u8 = undefined;
@@ -49,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator) !void {
 
         switch (cmd[0]) {
             'r' => {
-                try build(stdin_writer, stdout_reader);
+                try build(false, stdin_writer, stdout_reader);
             },
             else => {},
         }
@@ -58,14 +60,40 @@ pub fn init(allocator: std.mem.Allocator) !void {
     _ = try child.kill();
 }
 
-fn build(stdin_writer: Writer, stdout_reader: Reader) !void {
+fn startupMessage() !void {
+    try stdout.print(
+        \\
+        \\  {s}{s} {s} {d}ms
+        \\
+        \\  {s}  {s} {s}
+        \\  {s}  {s} -p 3000 
+        \\  {s}  {s} r + enter
+        \\
+    , .{
+        chalk.GREEN("LUSH v"),
+        chalk.GREEN("0.1.9"),
+        chalk.GRAY("ready in"),
+        14,
+        chalk.LIGHT_GREEN("➜"),
+        chalk.GRAY("Running on"),
+        chalk.LINK("http://localhost:3000/", chalk.CYAN("http://localhost:3000/")),
+        chalk.GREEN("➜"),
+        chalk.GRAY("Change port using"),
+        chalk.GREEN("➜"),
+        chalk.GRAY("Reload with"),
+    });
+}
+
+fn build(mute: bool, stdin_writer: Writer, stdout_reader: Reader) !void {
     try stdin_writer.writeAll(Proto.build());
 
-    var buf: [256]u8 = undefined;
-    const rawOut = try stdout_reader.readUntilDelimiter(&buf, '\n');
+    if (!mute) {
+        var buf: [256]u8 = undefined;
+        const rawOut = try stdout_reader.readUntilDelimiter(&buf, '\n');
 
-    var ftmBuf: [256]u8 = undefined;
-    const out = try std.fmt.bufPrint(&ftmBuf, "{s}\n", .{rawOut});
+        var ftmBuf: [256]u8 = undefined;
+        const out = try std.fmt.bufPrint(&ftmBuf, "{s}\n", .{rawOut});
 
-    try stdout.writeAll(out);
+        try stdout.writeAll(out);
+    }
 }

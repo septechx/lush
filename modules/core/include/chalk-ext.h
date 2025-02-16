@@ -1,0 +1,13 @@
+#ifndef _CHALK_EXT_H_
+#define _CHALK_EXT_H_
+
+#define DARK_GRAY(FMT) "\x1b[90m" FMT CHALK_DEFAULT_FG
+#define DARK_GREY(FMT) "\x1b[90m" FMT CHALK_DEFAULT_FG
+#define GRAY(FMT) "\x1b[38;5;103m" FMT CHALK_DEFAULT_FG
+#define GREY(FMT) "\x1b[38;5;103m" FMT CHALK_DEFAULT_FG
+#define LIGHT_GRAY(FMT) "\x1b[37m" FMT CHALK_DEFAULT_FG
+#define LIGHT_GREY(FMT) "\x1b[37m" FMT CHALK_DEFAULT_FG
+
+#define LINK(URL, FMT) "\033]8;;" URL "\033\\" FMT "\033]8;;\033\\"
+
+#endif

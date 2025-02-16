@@ -1,7 +1,8 @@
 import { Chalk } from "chalk";
+import { StdOuts } from "..";
 import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
-import { BundlerConfig, StdOuts } from "..";
+import type { BundlerConfig } from "..";
 
 const chalk = new Chalk({ level: 3 });
 

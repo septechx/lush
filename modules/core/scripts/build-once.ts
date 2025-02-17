@@ -1,10 +1,10 @@
 import { build, getConfig } from "./bundler";
-import { StdOuts } from ".";
+import type { BuildResult } from "./bundler";
 
 const config = await getConfig("bundler.config.ts");
 build(false, config).then(write);
 
-function write(outs: StdOuts) {
-  process.stdout.write(outs.out);
-  process.stderr.write(outs.err);
+function write(outs: BuildResult) {
+  process.stdout.write(outs.stdouts.out);
+  process.stderr.write(outs.stdouts.err);
 }

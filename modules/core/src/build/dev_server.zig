@@ -47,6 +47,8 @@ pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
 
     try startupMessage(allocator, config, timeToStart);
 
+    var reloads: u32 = 1;
+
     while (true) {
         var buf: [2]u8 = undefined;
         const cmd = try stdin.readUntilDelimiter(&buf, '\n');
@@ -57,7 +59,9 @@ pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
 
         switch (cmd[0]) {
             'r' => {
-                _ = try build(allocator, false, stdin_writer, stdout_reader);
+                _ = try build(allocator, true, stdin_writer, stdout_reader);
+                try reload(allocator, reloads);
+                reloads += 1;
             },
             else => {},
         }
@@ -67,7 +71,36 @@ pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
 }
 
 fn makeLink(allocator: std.mem.Allocator, url: []const u8) ![]const u8 {
-    return std.fmt.allocPrint(allocator, "\x1b]8;;{s}\x1b\\\x1b[36m{s}\x1b[0m\x1b]8;;\x1b\\", .{ url, url });
+    return try std.fmt.allocPrint(allocator, "\x1b]8;;{s}\x1b\\\x1b[36m{s}\x1b[0m\x1b]8;;\x1b\\", .{ url, url });
+}
+
+fn makeTimestamp(allocator: std.mem.Allocator) ![]const u8 {
+    const timestamp = std.time.timestamp();
+    const seconds = @as(u64, @intCast(timestamp));
+
+    const epoch_seconds = seconds;
+    const tm = std.time.epoch.EpochSeconds{ .secs = epoch_seconds };
+    const dt = tm.getDaySeconds();
+
+    return try std.fmt.allocPrint(allocator, "\x1b[38;5;103m{d:0>2}:{d:0>2}:{d:0>2}\x1b[0m", .{
+        dt.getHoursIntoDay(),
+        dt.getMinutesIntoHour(),
+        dt.getSecondsIntoMinute(),
+    });
+}
+
+fn makeReloads(allocator: std.mem.Allocator, reloads: u32) ![]const u8 {
+    return if (reloads > 1) try std.fmt.allocPrint(allocator, "\x1b[33m(x{d})\x1b[0m", .{reloads}) else "";
+}
+
+fn reload(allocator: std.mem.Allocator, reloads: u32) !void {
+    const timestamp = try makeTimestamp(allocator);
+    defer allocator.free(timestamp);
+
+    const reloadAmount = try makeReloads(allocator, reloads);
+    defer allocator.free(reloadAmount);
+
+    try stdout.print("{s} {s} server restarted. {s}\n", .{ timestamp, chalk.CYAN("[lush]"), reloadAmount });
 }
 
 fn startupMessage(allocator: std.mem.Allocator, config: anytype, time: f64) !void {
@@ -80,9 +113,8 @@ fn startupMessage(allocator: std.mem.Allocator, config: anytype, time: f64) !voi
         \\
         \\  {s}{s} {s} {d}ms
         \\
-        \\  {s}  {s} {s}
-        \\  {s}  {s} -p 3000 
-        \\  {s}  {s} r + enter
+        \\  {s}  Local: {s}
+        \\  {s}  {s} r + enter {s}
         \\
     , .{
         chalk.GREEN("LUSH v"),
@@ -90,12 +122,10 @@ fn startupMessage(allocator: std.mem.Allocator, config: anytype, time: f64) !voi
         chalk.GRAY("ready in"),
         time,
         chalk.LIGHT_GREEN("➜"),
-        chalk.GRAY("Running on"),
         link,
         chalk.GREEN("➜"),
-        chalk.GRAY("Change port using"),
-        chalk.GREEN("➜"),
-        chalk.GRAY("Reload with"),
+        chalk.GRAY("press"),
+        chalk.GRAY("to reload"),
     });
 }
 

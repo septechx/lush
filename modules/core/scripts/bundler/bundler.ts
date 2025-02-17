@@ -1,5 +1,7 @@
+import { basename } from "path";
 import { Chalk } from "chalk";
 import { StdOuts } from "..";
+import { lua } from "./lua-plugin";
 import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
 import type { BundlerConfig, Result } from "..";
@@ -30,13 +32,16 @@ export async function build(
   const startTime = performance.now();
 
   const output = await Bun.build(
-    extend<BundlerConfig, BuildConfig, BuildConfig>(config, {
-      entrypoints: ["./src/index.html"],
-      outdir: "./dist/client",
-      splitting: true,
-      env: "PUBLIC_*",
-      sourcemap: "linked",
-    }),
+    concatPlugins(
+      extend<BundlerConfig, BuildConfig, BuildConfig>(config, {
+        entrypoints: ["src/routes/index.html"],
+        outdir: "dist/client",
+        splitting: true,
+        env: "PUBLIC_*",
+        sourcemap: "linked",
+      }),
+      [lua],
+    ),
   ).catch((e) => {
     outs.error("Build failed\n");
     throw e;
@@ -67,9 +72,7 @@ export async function build(
 }
 
 function genFileOut(path: string): string {
-  const splitPath = path.split("/");
-  const exts = splitPath[splitPath.length - 1].split(".");
-  const ext = exts[exts.length - 1];
+  const ext = basename(path).split(".").at(-1)!;
 
   return colors[ext](`dist/${path.split("/dist/")[1]}`);
 }
@@ -82,4 +85,14 @@ function extend<T extends object, U extends object, V = T & U>(
     ...ext,
     ...obj,
   } as V;
+}
+
+function concatPlugins(
+  config: BuildConfig,
+  plugins: NonNullable<BuildConfig["plugins"]>,
+): BuildConfig {
+  return {
+    ...config,
+    plugins: (config.plugins ?? []).concat(plugins),
+  };
 }

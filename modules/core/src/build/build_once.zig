@@ -1,8 +1,10 @@
 const std = @import("std");
 const Writer = std.fs.File.Writer;
 
-pub fn prepareBuild(stdOut: Writer) !void {
-    try stdOut.writeAll("\x1B[2J\x1B[H");
+pub fn prepareBuild(stdOut: Writer, clear: bool) !void {
+    if (clear) {
+        try stdOut.writeAll("\x1B[2J\x1B[H");
+    }
 
     std.fs.cwd().deleteTree("dist") catch |err| {
         if (err != error.FileNotFound) return err;

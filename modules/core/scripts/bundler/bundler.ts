@@ -2,7 +2,7 @@ import { Chalk } from "chalk";
 import { StdOuts } from "..";
 import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
-import type { BundlerConfig } from "..";
+import type { BundlerConfig, Result } from "..";
 
 const chalk = new Chalk({ level: 3 });
 
@@ -14,7 +14,15 @@ const colors: Record<string, ChalkInstance> = {
   map: chalk.red,
 };
 
-export async function build(dev: boolean, config: BundlerConfig) {
+export interface BuildResult {
+  stdouts: StdOuts;
+  result: Result;
+}
+
+export async function build(
+  dev: boolean,
+  config: BundlerConfig,
+): Promise<BuildResult> {
   const realStartTime = performance.now();
 
   const outs = new StdOuts();
@@ -44,13 +52,18 @@ export async function build(dev: boolean, config: BundlerConfig) {
 
   const realEndTime = performance.now();
 
-  outs.print(
-    chalk.greenBright(
-      `Built in ${Math.round(endTime - startTime)}ms (${Math.round(realEndTime - realStartTime)}ms). \n`,
-    ),
-  );
+  const time = Math.round(endTime - startTime);
+  const realTime = Math.round(realEndTime - realStartTime);
 
-  return outs;
+  outs.print(chalk.greenBright(`Built in ${time}ms (${realTime}ms). \n`));
+
+  return {
+    stdouts: outs,
+    result: {
+      time,
+      realTime,
+    },
+  };
 }
 
 function genFileOut(path: string): string {

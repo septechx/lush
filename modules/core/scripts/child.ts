@@ -1,5 +1,8 @@
 import { build, getConfig } from "./bundler";
-import { StdOuts } from ".";
+import { stringify } from "./lon";
+import type { BuildResult } from "./bundler";
+
+import fs from "fs";
 
 process.stdin.on("data", async (data) => {
   switch (data.toString()[0]) {
@@ -12,7 +15,15 @@ process.stdin.on("data", async (data) => {
   }
 });
 
-function write(outs: StdOuts) {
-  process.stdout.write(outs.out);
-  process.stderr.write(outs.err);
+function write(outs: BuildResult) {
+  let buf = outs.stdouts.out;
+
+  process.stderr.write(outs.stdouts.err);
+
+  const lon = stringify(outs.result);
+  buf += `%${lon}$`;
+
+  fs.writeFileSync("temp.lon", lon);
+
+  process.stdout.write(buf);
 }

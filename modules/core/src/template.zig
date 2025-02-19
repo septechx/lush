@@ -9,22 +9,24 @@ pub const TemplateMap = []StringMap;
 
 pub const templateMap = [_]StringMap{
     .{ .path = "src/", .content = "" },
+    .{ .path = "src/routes/", .content = "" },
+    .{ .path = "src/styles/", .content = "" },
+    .{ .path = "src/routes/client.lua", .content = @embedFile("template/src/routes/client.lua") },
+    .{ .path = "src/routes/index.html", .content = @embedFile("template/src/routes/index.html") },
+    .{ .path = "src/routes/server.lua", .content = @embedFile("template/src/routes/server.lua") },
+    .{ .path = "src/styles/styles.css", .content = @embedFile("template/src/styles/styles.css") },
     .{ .path = ".gitignore", .content = @embedFile("template/.gitignore") },
     .{ .path = ".npmrc", .content = @embedFile("template/.npmrc") },
     .{ .path = "bundler.config.ts", .content = @embedFile("template/bundler.config.ts") },
     .{ .path = "package.json", .content = @embedFile("template/package.json") },
 };
 
-pub fn getSize(map: StringMap, name: []const u8) usize {
-    return map.content.len - 6 + name.len;
-}
-
 pub fn makeTemplate(allocator: std.mem.Allocator, name: []const u8, destination: TemplateMap) !void {
     std.mem.copyForwards(StringMap, destination, &templateMap);
 
     for (destination) |*map| {
         if (std.mem.eql(u8, map.path, "package.json")) {
-            const size = getSize(map.*, name);
+            const size = map.content.len - 6 + name.len;
             const templateBuf = try allocator.alloc(u8, size);
             errdefer allocator.free(templateBuf);
 

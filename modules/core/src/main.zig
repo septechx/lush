@@ -3,6 +3,7 @@ const cli = @import("zig-cli");
 const template = @import("template.zig");
 const dev_server = @import("build/dev_server.zig");
 const build_once = @import("build/build_once.zig");
+const prepare = @import("build/prepare.zig");
 
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
@@ -114,12 +115,12 @@ fn freeConfig() void {
 }
 
 fn run_dev() !void {
-    try build_once.prepareBuild(stdOut, true);
+    try prepare.prepareBuild(allocator, stdOut, true);
     try dev_server.init(allocator, &config);
 }
 
 fn run_build() !void {
-    try build_once.prepareBuild(stdOut, false);
+    try prepare.prepareBuild(allocator, stdOut, false);
     try build_once.build(allocator, stdOut, stdErr);
 }
 

@@ -1,7 +1,7 @@
 import { basename } from "path";
 import { Chalk } from "chalk";
 import { StdOuts } from "..";
-import { lua } from "./lua-plugin";
+import { lush } from "./lush";
 import type { ChalkInstance } from "chalk";
 import type { BuildConfig } from "bun";
 import type { BundlerConfig, Result } from "..";
@@ -40,7 +40,7 @@ export async function build(
         env: "PUBLIC_*",
         sourcemap: "linked",
       }),
-      [lua],
+      [lush],
     ),
   ).catch((e) => {
     outs.error("Build failed\n");

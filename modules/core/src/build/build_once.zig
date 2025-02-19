@@ -1,16 +1,6 @@
 const std = @import("std");
 const Writer = std.fs.File.Writer;
 
-pub fn prepareBuild(stdOut: Writer, clear: bool) !void {
-    if (clear) {
-        try stdOut.writeAll("\x1B[2J\x1B[H");
-    }
-
-    std.fs.cwd().deleteTree("dist") catch |err| {
-        if (err != error.FileNotFound) return err;
-    };
-}
-
 pub fn build(allocator: std.mem.Allocator, stdOut: Writer, stdErr: Writer) !void {
     const result = try std.process.Child.run(.{
         .allocator = allocator,

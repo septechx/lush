@@ -1,25 +1,25 @@
 const std = @import("std");
-const templating = @import("templating.zig");
+const templating = @import("templating/templating.zig");
 const http = std.http;
 const net = std.net;
-const log = std.log.scoped(.server);
 
-const server_addr = "127.0.0.1";
-const server_port = 3000;
 const buffer_size = 8192;
 
+const stdout = std.io.getStdOut().writer();
+const stderr = std.io.getStdErr().writer();
+
 const Server = struct {
-    _allocator: std.mem.Allocator,
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) Server {
-        return .{ ._allocator = allocator };
+        return .{ .allocator = allocator };
     }
 
     fn handleRequest(self: *Server, request: *http.Server.Request) !void {
-        log.info("{s} {s} {s}", .{ @tagName(request.head.method), @tagName(request.head.version), request.head.target });
+        stdout.print("{s} {s} {s}", .{ @tagName(request.head.method), @tagName(request.head.version), request.head.target });
 
         const file_path = try self.getFilePath(request.head.target);
-        defer self._allocator.free(file_path);
+        defer self.allocator.free(file_path);
         if (try self.serveFile(file_path, request)) {
             return;
         } else {
@@ -31,7 +31,7 @@ const Server = struct {
         const file_name = if (std.mem.eql(u8, target, "/"))
             "index.html"
         else if (target[0] == '/') target[1..] else target;
-        return try std.fmt.allocPrint(self._allocator, "dist/{s}", .{file_name});
+        return try std.fmt.allocPrint(self.allocator, "dist/client/{s}", .{file_name});
     }
 
     fn serveFile(
@@ -39,6 +39,8 @@ const Server = struct {
         file_path: []const u8,
         request: *http.Server.Request,
     ) !bool {
+        if (!self.shouldServe(file_path)) return false;
+
         const file = std.fs.cwd().openFile(file_path, .{}) catch |err| {
             if (err == error.FileNotFound) return false;
             return err;
@@ -46,8 +48,8 @@ const Server = struct {
         defer file.close();
 
         const file_size = try file.getEndPos();
-        const content = try file.readToEndAlloc(self._allocator, file_size);
-        defer self._allocator.free(content);
+        const content = try file.readToEndAlloc(self.allocator, file_size);
+        defer self.allocator.free(content);
 
         const content_type = try self.getContentType(file_path);
 
@@ -57,19 +59,25 @@ const Server = struct {
         }};
 
         if (std.mem.eql(u8, content_type, "text/html")) {
-            const processed = try templating.parse(content, file_path, self._allocator);
+            const processed = try templating.parse(content, file_path, self.allocator);
 
             try request.respond(processed, .{
                 .extra_headers = &headers,
             });
 
-            self._allocator.free(processed);
+            self.allocator.free(processed);
         } else {
             try request.respond(content, .{
                 .extra_headers = &headers,
             });
         }
 
+        return true;
+    }
+
+    fn shouldServe(self: *Server, path: []const u8) bool {
+        _ = self;
+        if (std.mem.endsWith(u8, path, "server.lua")) return false;
         return true;
     }
 
@@ -93,7 +101,7 @@ const Server = struct {
     pub fn runServer(self: *Server, tcp_server: *net.Server) !void {
         while (true) {
             var connection = tcp_server.accept() catch |err| {
-                log.err("Connection to client interrupted: {}", .{err});
+                stdout.print("Connection to client interrupted: {}", .{err});
                 continue;
             };
             defer connection.stream.close();
@@ -102,25 +110,23 @@ const Server = struct {
             var http_server = http.Server.init(connection, &read_buffer);
 
             var request = http_server.receiveHead() catch |err| {
-                log.err("Could not read head: {}", .{err});
+                stderr.print("Could not read head: {}", .{err});
                 continue;
             };
 
             self.handleRequest(&request) catch |err| {
-                log.err("Could not handle request: {}", .{err});
+                stderr.print("Could not handle request: {}", .{err});
                 continue;
             };
         }
     }
 };
 
-pub fn createServer(allocator: std.mem.Allocator) !void {
+pub fn createServer(allocator: std.mem.Allocator, ip: []const u8, port: u16) !void {
     var server = Server.init(allocator);
 
-    const address = net.Address.parseIp4(server_addr, server_port) catch unreachable;
+    const address = net.Address.parseIp4(ip, port) catch unreachable;
     var tcp_server = try address.listen(.{});
-
-    log.info("Server listening on http://{s}:{d}", .{ server_addr, server_port });
 
     try server.runServer(&tcp_server);
 }

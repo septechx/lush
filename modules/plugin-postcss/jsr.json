@@ -1,12 +1,11 @@
 {
   "name": "@lush/plugin-postcss",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "LGPL-3.0",
   "exports": "./src/index.ts",
   "imports": {
     "postcss": "npm:postcss@8.5.1",
     "bun": "npm:@types/bun@latest",
     "@lush/lush": "jsr:@lush/lush@>=0.2.0"
-  },
-  "exclude": ["BUILD.bazel"]
+  }
 }

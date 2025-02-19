@@ -1,6 +1,5 @@
 .zig-cache/
 zig-out/
-bazel-*
 node_modules/
 dist/
 .lush/

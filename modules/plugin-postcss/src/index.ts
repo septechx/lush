@@ -17,7 +17,7 @@ const PostcssPlugin: (
 ) => BunPlugin = (plugins, opts) => ({
   name: "lush-plugin-postcss",
   setup(build) {
-    build.onLoad({ filter: /\b\w+\.css\b/ }, async (args) => {
+    build.onLoad({ filter: /.css$/ }, async (args) => {
       const input = await Bun.file(args.path).text();
 
       const processed = (await postcss(plugins)

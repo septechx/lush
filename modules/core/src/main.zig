@@ -1,5 +1,6 @@
 const std = @import("std");
 const cli = @import("zig-cli");
+const @"lush-server" = @import("lush-server");
 const template = @import("template.zig");
 const dev_server = @import("build/dev_server.zig");
 const build_once = @import("build/build_once.zig");
@@ -77,6 +78,29 @@ fn dev(r: *cli.AppRunner) !cli.Command {
     };
 }
 
+fn serve(r: *cli.AppRunner) !cli.Command {
+    return cli.Command{
+        .name = "serve",
+        .description = cli.Description{
+            .one_line = "Run the server",
+        },
+        .options = try r.allocOptions(&.{
+            cli.Option{
+                .long_name = "port",
+                .help = "port to bind to",
+                .short_alias = 'p',
+                .required = false,
+                .value_ref = r.mkRef(&config.port),
+            },
+        }),
+        .target = cli.CommandTarget{
+            .action = cli.CommandAction{
+                .exec = run_serve,
+            },
+        },
+    };
+}
+
 fn parseArgs() !cli.ExecFn {
     var r = try cli.AppRunner.init(allocator);
     const app = cli.App{
@@ -91,6 +115,7 @@ fn parseArgs() !cli.ExecFn {
                     try dev(&r),
                     try init(&r),
                     try build(&r),
+                    try serve(&r),
                 }),
             },
         },
@@ -116,7 +141,7 @@ fn freeConfig() void {
 
 fn run_dev() !void {
     try prepare.prepareBuild(allocator, stdOut, true);
-    try dev_server.init(allocator, &config);
+    try dev_server.init(allocator, config.port);
 }
 
 fn run_build() !void {
@@ -124,8 +149,8 @@ fn run_build() !void {
     try build_once.build(allocator, stdOut, stdErr);
 }
 
-fn run_server() !void {
-    std.log.debug("server is listening on localhost:{d}", .{config.port});
+fn run_serve() !void {
+    try @"lush-server".server.createServer(allocator, "127.0.0.1", config.port);
 }
 
 fn run_init() !void {

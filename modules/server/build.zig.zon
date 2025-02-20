@@ -24,12 +24,12 @@
     // internet connectivity.
     .dependencies = .{
         .ziglua = .{
-            .url = "git+https://github.com/natecraddock/ziglua#4322c27784c022bed67d8de24977385e432f275e",
-            .hash = "1220cc71cd47b26ac53721b89d47f98cca82573e247e6299431e5d9f60a3bcd2deec",
+            .url = "git+https://github.com/natecraddock/ziglua#00a3c39c587b1b853748c05b5f5c1dc68f5f3683",
+            .hash = "1220ee6d36df8c7847234ff5212eb7fc857d284b0d2eccb47cb9ba04ce089d4d1472",
         },
         .@"alpha-html" = .{
-            .url = "git+https://github.com/septechx/alpha-html?ref=0.1.3#adf2b913cf4a45f57f5e0a21f5c51b7534d99ab2",
-            .hash = "12200ffd13e06e31c71812a9cedc00d3a7914ea431f7b4aa7732bd6316cffba1b4d6",
+            .url = "git+https://github.com/septechx/alpha-html?ref=0.1.4#1668a6f81bd984faa87fa43a18b5feb551b44d8b",
+            .hash = "1220972b12b307ac726c3798300c8891ca8575c38f735694c1809a829c7802029113",
         },
     },
     .paths = .{

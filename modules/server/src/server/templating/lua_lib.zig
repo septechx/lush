@@ -1,7 +1,7 @@
 const std = @import("std");
 const ziglua = @import("ziglua");
 
-pub const functions = [_]Function{.{ .function = fetcher, .name = "Fetch" }};
+pub const functions = [_]Function{.{ .function = fetcher, .name = "fetch" }};
 
 const Function = struct {
     function: fn (*ziglua.Lua) i32,

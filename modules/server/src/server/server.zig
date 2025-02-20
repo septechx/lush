@@ -16,7 +16,7 @@ const Server = struct {
     }
 
     fn handleRequest(self: *Server, request: *http.Server.Request) !void {
-        stdout.print("{s} {s} {s}", .{ @tagName(request.head.method), @tagName(request.head.version), request.head.target });
+        try stdout.print("{s} {s} {s}", .{ @tagName(request.head.method), @tagName(request.head.version), request.head.target });
 
         const file_path = try self.getFilePath(request.head.target);
         defer self.allocator.free(file_path);
@@ -59,7 +59,7 @@ const Server = struct {
         }};
 
         if (std.mem.eql(u8, content_type, "text/html")) {
-            const processed = try templating.parse(content, file_path, self.allocator);
+            const processed = try templating.parse(self.allocator, content, file_path, stderr);
 
             try request.respond(processed, .{
                 .extra_headers = &headers,
@@ -101,7 +101,7 @@ const Server = struct {
     pub fn runServer(self: *Server, tcp_server: *net.Server) !void {
         while (true) {
             var connection = tcp_server.accept() catch |err| {
-                stdout.print("Connection to client interrupted: {}", .{err});
+                try stdout.print("Connection to client interrupted: {}", .{err});
                 continue;
             };
             defer connection.stream.close();
@@ -110,12 +110,12 @@ const Server = struct {
             var http_server = http.Server.init(connection, &read_buffer);
 
             var request = http_server.receiveHead() catch |err| {
-                stderr.print("Could not read head: {}", .{err});
+                try stderr.print("Could not read head: {}", .{err});
                 continue;
             };
 
             self.handleRequest(&request) catch |err| {
-                stderr.print("Could not handle request: {}", .{err});
+                try stderr.print("Could not handle request: {}", .{err});
                 continue;
             };
         }

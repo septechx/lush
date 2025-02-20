@@ -2,6 +2,7 @@ const std = @import("std");
 const Writer = std.fs.File.Writer;
 const Reader = std.fs.File.Reader;
 const io = std.io;
+const @"lush-server" = @import("lush-server");
 const globals = @import("../globals.zig");
 const lon = @import("../lon.zig");
 
@@ -28,7 +29,7 @@ const Proto = struct {
     }
 };
 
-pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
+pub fn init(allocator: std.mem.Allocator, port: u16) !void {
     var child = std.process.Child.init(&[_][]const u8{ "bun", "node_modules/@lush/lush/scripts/child.ts" }, allocator);
 
     child.stdin_behavior = .Pipe;
@@ -45,7 +46,9 @@ pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
     const obj = try lon.parse(allocator, first);
     const timeToStart = obj.object.get("realTime").?.number;
 
-    try startupMessage(allocator, config, timeToStart);
+    try @"lush-server".server.createServer(allocator, "127.0.0.1", port);
+
+    try startupMessage(allocator, port, timeToStart);
 
     var reloads: u32 = 1;
 
@@ -60,7 +63,7 @@ pub fn init(allocator: std.mem.Allocator, config: anytype) !void {
         switch (cmd[0]) {
             'r' => {
                 _ = try build(allocator, true, stdin_writer, stdout_reader);
-                try reload(allocator, reloads);
+                try reload(allocator, reloads, port);
                 reloads += 1;
             },
             else => {},
@@ -93,19 +96,21 @@ fn makeReloads(allocator: std.mem.Allocator, reloads: u32) ![]const u8 {
     return if (reloads > 1) try std.fmt.allocPrint(allocator, "\x1b[33m(x{d})\x1b[0m", .{reloads}) else "";
 }
 
-fn reload(allocator: std.mem.Allocator, reloads: u32) !void {
+fn reload(allocator: std.mem.Allocator, reloads: u32, port: u16) !void {
     const timestamp = try makeTimestamp(allocator);
     defer allocator.free(timestamp);
 
     const reloadAmount = try makeReloads(allocator, reloads);
     defer allocator.free(reloadAmount);
 
+    try @"lush-server".server.createServer(allocator, "127.0.0.1", port);
+
     try stdout.print("{s} {s} server restarted. {s}\n", .{ timestamp, chalk.CYAN("[lush]"), reloadAmount });
 }
 
-fn startupMessage(allocator: std.mem.Allocator, config: anytype, time: f64) !void {
+fn startupMessage(allocator: std.mem.Allocator, port: u16, time: f64) !void {
     var buf: [23]u8 = undefined;
-    const url = try std.fmt.bufPrint(&buf, "http://localhost:{d}/", .{config.port});
+    const url = try std.fmt.bufPrint(&buf, "http://localhost:{d}/", .{port});
     const link = try makeLink(allocator, url);
     defer allocator.free(link);
 

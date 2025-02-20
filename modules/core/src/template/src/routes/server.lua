@@ -1,1 +1,3 @@
-Fetched = Fetch("https://whatthecommit.com/index.txt")
+--!strict
+
+Fetched = fetch("https://whatthecommit.com/index.txt")

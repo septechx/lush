@@ -36,4 +36,4 @@ jobs:
         with:
           version: master
       - name: Publish
-        run: make
+        run: make publish

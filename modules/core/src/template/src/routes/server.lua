@@ -1,3 +1,7 @@
 --!strict
 
-Fetched = fetch("https://whatthecommit.com/index.txt")
+local fetched = fetch("https://whatthecommit.com/index.txt")
+
+Export = {
+	fetched = fetched,
+}

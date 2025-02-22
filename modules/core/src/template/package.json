@@ -4,7 +4,8 @@
   "scripts": {
     "lush": "lush",
     "dev": "lush dev",
-    "build": "lush build"
+    "build": "lush build",
+    "serve": "lush serve"
   },
   "devDependencies": {
     "@lush/lush": "npm:@jsr/lush__lush",

@@ -1,7 +1,12 @@
 --!strict
 
-Count, SetCount = createSignal(0)
+local count, setCount = createSignal(0)
 
-function HandleClick()
-	SetCount(Count() + 1)
+local function handleClick()
+	setCount(count() + 1)
 end
+
+Export = {
+	count = count,
+	handleClick = handleClick,
+}

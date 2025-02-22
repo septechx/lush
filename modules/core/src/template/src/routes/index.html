@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <h1>Hello, {$$Fetched}</h1>
+    <h1>Hello, {$$fetched}</h1>
     <!-- $$ Indicates server side rendering -->
-    <button class="bg-green-500 text-white" @click="HandleClick()">
+    <button class="bg-green-500 text-white" @click="handleClick()">
       <!-- @handler calls function -->
-      The count is {Count}
+      The count is {count}
       <!-- Template updates on signal rerender -->
     </button>
   </body>

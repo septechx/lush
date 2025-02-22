@@ -28,8 +28,8 @@
             .hash = "1220ee6d36df8c7847234ff5212eb7fc857d284b0d2eccb47cb9ba04ce089d4d1472",
         },
         .@"alpha-html" = .{
-            .url = "git+https://github.com/septechx/alpha-html?ref=0.1.4#1668a6f81bd984faa87fa43a18b5feb551b44d8b",
-            .hash = "1220972b12b307ac726c3798300c8891ca8575c38f735694c1809a829c7802029113",
+            .url = "git+https://github.com/septechx/alpha-html?ref=0.2.2#ef3fab49defe2e6cc28c6ca5137a5cb45b39ecb9",
+            .hash = "12209fdb0ab3b2efb818f896b10d3c0b783e2fa5c0ef7987524cc43dae523a8f26c4",
         },
     },
     .paths = .{

@@ -6,12 +6,6 @@ VERSION := $(shell grep 'pub const version =' modules/core/src/globals.zig | cut
 
 default: set-version
 
-dev: set-version
-	@echo "Copying build files..."
-	rm -rf test/my-lush-app/node_modules/@lush/lush/*
-	mkdir -p test/my-lush-app/node_modules/@lush/lush
-	cp -r build/package/* test/my-lush-app/node_modules/@lush/lush
-
 build:
 	@echo "Building project..."
 	cd modules/core && zig build -freference-trace
